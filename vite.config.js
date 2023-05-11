@@ -1,20 +1,28 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
-import { config } from 'dotenv'
-import path from 'path'
-
-config({ path: './.env.local' })
-
+import jsconfigPaths from 'vite-jsconfig-paths'
 // https://vitejs.dev/config/
-export default defineConfig({
-  plugins: [react()],
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
+
+export default defineConfig(({ mode }) => {
+  let env = loadEnv(mode, process.cwd(), '')
+
+  env = {
+    ...process.env,
+    ...Object.entries(env).reduce((prev, [key, val]) => {
+      return {
+        ...prev,
+        [key]: val,
+      }
+    }, {}),
+  }
+  return {
+    plugins: [react(), jsconfigPaths()],
+    resolve: {
+      alias: {},
     },
-  },
-  server: {
-    port: parseInt(process.env.PORT) || 3000,
-    open: true,
-  },
+    server: {
+      port: parseInt(env.PORT) || 3000,
+      open: true,
+    },
+  }
 })
